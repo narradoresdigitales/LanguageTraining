@@ -1,5 +1,7 @@
 import pygame
-from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, WHITE, BLACK, FONT_NAME, FONT_SIZE
+from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
+from scenes.intro_scene import IntroScene
+from scenes.mission1 import Mission1Scene 
 
 def main():
     pygame.init()
@@ -7,19 +9,8 @@ def main():
     pygame.display.set_caption('Spanish Language Training')
     
     clock = pygame.time.Clock()
-    font = pygame.font.SysFont(FONT_NAME, FONT_SIZE)
-    
-    briefing_text = [
-        "Mission 1: Initial Contact",
-        "",
-        "You are conducting a field interview.",
-        "Your objective is to gather information",
-        "using appropriate Spanish register.",
-        "",
-        "Press any key to begin."
-    ]
-    
-    
+        
+    scene = IntroScene(screen)
     
     running  = True
     while running:
@@ -28,18 +19,15 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            elif event.type == pygame.KEYDOWN:
-                running = False
+            else:
+                scene.handle_event(event)
                 
-        screen.fill(WHITE)
+        scene.update()       
         
-        y = 50
-        for line in briefing_text:
-            rendered = font.render(line, True, BLACK)
-            screen.blit(rendered, (50, y))
-            y += 35
-        
-       
+        if hasattr(scene, 'finished') and scene.finished:
+            scene = Mission1Scene(screen)
+    
+        scene.draw()
         
         pygame.display.flip()
         
