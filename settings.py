@@ -8,3 +8,4 @@ BLACK = (0, 0, 0)
 
 FONT_NAME = 'arial'
 FONT_SIZE = 24
+LINE_SPACING = 15

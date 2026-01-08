@@ -1,7 +1,7 @@
 import json 
 import pygame
 import os 
-from settings import WHITE, BLACK, FONT_NAME, FONT_SIZE
+from settings import WHITE, BLACK, FONT_NAME, FONT_SIZE, LINE_SPACING
 
 
 class Mission1Scene:
@@ -82,8 +82,11 @@ class Mission1Scene:
             for i in range(self.current_transcript_index + 1):
                 line = self.font.render(self.transcript[i], True, BLACK)
                 self.screen.blit(line, (50, y_offset))
-                y_offset += FONT_SIZE + 10
-
+                y_offset += FONT_SIZE + LINE_SPACING
+        
+        # Add extra vertical space before the prompt
+            y_offset += 20  # extra space in pixels 
+            
             prompt = self.font.render(
             'Presione ENTER para continuar la transcripción...', True, BLACK
             )
