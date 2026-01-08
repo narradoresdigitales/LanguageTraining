@@ -1,7 +1,7 @@
 import pygame
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
 from scenes.intro_scene import IntroScene
-from scenes.mission1 import Mission1Scene 
+from scenes.mission1 import Mission1Scene
 
 def main():
     pygame.init()

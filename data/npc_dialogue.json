@@ -1,0 +1,25 @@
+{
+    "mission1": {
+    "transcript": [
+    "ENTREVISTADOR: ¿Dónde estaba usted la noche del 12 de mayo?",
+    "SOSPECHOSO: Estaba en casa con mi familia.",
+    "ENTREVISTADOR: ¿Puede confirmar quiénes estaban presentes?",
+    "SOSPECHOSO: Mi esposa y mis dos hijos."
+    ],
+
+    "questions": [
+    {
+        "prompt": "Resuma la coartada del sospechoso.",
+        "required_keywords": ["casa", "familia", "esposa", "hijos"],
+        "npc_response_success": "Entendido. La coartada queda registrada.",
+        "npc_response_failure": "Revise la transcripción. Falta información clave."
+    },
+    {
+        "prompt": "¿Hay alguna contradicción potencial en su declaración?",
+        "required_keywords": ["confirmar", "presente", "familia"],
+        "npc_response_success": "Correcto. Es una posible debilidad.",
+        "npc_response_failure": "No ha identificado un problema válido."
+    }
+    ]
+}
+}
