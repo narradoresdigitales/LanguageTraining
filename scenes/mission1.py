@@ -1,13 +1,18 @@
 import json 
 import pygame
 import os 
-from settings import WHITE, BLACK, FONT_NAME, FONT_SIZE, LINE_SPACING
+from settings import WHITE, BLACK, FONT_NAME, FONT_SIZE, LINE_SPACING, SCREEN_WIDTH, SCREEN_HEIGHT
 
 
 class Mission1Scene:
     def __init__(self, screen):
         self.screen = screen
         self.font = pygame.font.SysFont(FONT_NAME, FONT_SIZE)
+        
+        # Load and scale background image
+        bg_path = os.path.join('assets', 'images', 'workstation.png')  
+        self.background = pygame.image.load(bg_path).convert()  # Use convert_alpha() if image has transparency
+        self.background = pygame.transform.scale(self.background, (SCREEN_WIDTH, SCREEN_HEIGHT))
         
         
         # Load NPC dialogue
@@ -74,14 +79,19 @@ class Mission1Scene:
         pass
     
     def draw(self):
-        self.screen.fill(WHITE)
+        self.screen.blit(self.background, (0, 0))
         y_offset = 20
 
         # --- Display transcript ---
         if self.showing_transcript:
             for i in range(self.current_transcript_index + 1):
-                line = self.font.render(self.transcript[i], True, BLACK)
-                self.screen.blit(line, (50, y_offset))
+                rendered = self.font.render(self.transcript[i], True, BLACK)
+                
+                text_rect = rendered.get_rect()
+                text_rect.centerx = self.screen.get_width() //2
+                text_rect.y = y_offset
+                
+                self.screen.blit(rendered, text_rect)
                 y_offset += FONT_SIZE + LINE_SPACING
         
         # Add extra vertical space before the prompt
@@ -90,7 +100,12 @@ class Mission1Scene:
             prompt = self.font.render(
             'Presione ENTER para continuar la transcripción...', True, BLACK
             )
-            self.screen.blit(prompt, (50, y_offset))
+            
+            prompt_rect = prompt.get_rect()
+            prompt_rect.centerx = self.screen.get_width() // 2
+            prompt_rect.y = y_offset
+            
+            self.screen.blit(prompt, prompt_rect)
 
         # --- Display "All questions completed" message ---
         elif self.current_question_index >= len(self.questions):

@@ -9,13 +9,14 @@ class IntroScene:
         self.finished = False
         
         # Load and scale background image
-        bg_path = os.path.join('assets', 'images', 'briefing room.png')  # Update path if needed
+        bg_path = os.path.join('assets', 'images', 'briefing room.png')  
         self.background = pygame.image.load(bg_path).convert()  # Use convert_alpha() if image has transparency
         self.background = pygame.transform.scale(self.background, (SCREEN_WIDTH, SCREEN_HEIGHT))
         
         self.text = [
             'Mission 1: Initial Contact', 
             '',
+            
             'You are conducting a field interview',
             'Your objective is to gather information',
             'using appropriate Spanish register.',
@@ -34,8 +35,10 @@ class IntroScene:
         self.screen.blit(self.background, (0, 0))
         
         # Draw text on top
-        y = 50
+        y = 185
         for line in self.text:
             rendered = self.font.render(line, True, BLACK)
-            self.screen.blit(rendered, (50, y))
+            text_rect = rendered.get_rect(centerx=self.screen.get_width() //2)
+            text_rect.y = y
+            self.screen.blit(rendered, text_rect)
             y += 35
