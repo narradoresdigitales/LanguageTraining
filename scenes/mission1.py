@@ -1,7 +1,8 @@
 import json 
 import pygame
 import os 
-from settings import WHITE, BLACK, FONT_NAME, FONT_SIZE, LINE_SPACING, SCREEN_WIDTH, SCREEN_HEIGHT
+from settings import TEXT_COLOR, FONT_NAME, FONT_SIZE, LINE_SPACING, SCREEN_WIDTH, SCREEN_HEIGHT, FRAME_WIDTH
+from utils.text import draw_centered_text
 
 
 class Mission1Scene:
@@ -9,10 +10,7 @@ class Mission1Scene:
         self.screen = screen
         self.font = pygame.font.SysFont(FONT_NAME, FONT_SIZE)
         
-        # Load and scale background image
-        bg_path = os.path.join('assets', 'images', 'workstation.png')  
-        self.background = pygame.image.load(bg_path).convert()  # Use convert_alpha() if image has transparency
-        self.background = pygame.transform.scale(self.background, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        
         
         
         # Load NPC dialogue
@@ -79,26 +77,42 @@ class Mission1Scene:
         pass
     
     def draw(self):
-        self.screen.blit(self.background, (0, 0))
-        y_offset = 20
+        
+        self.screen.fill((0, 0, 0))  # Black background
+
+        # Draw terminal frame
+        margin = 40
+        TEXT_COLOR = (0, 255, 0)
+        frame_rect = pygame.Rect(
+            margin,
+            margin,
+        self.screen.get_width() - margin * 2,
+        self.screen.get_height() - margin * 2
+        )
+        pygame.draw.rect(self.screen, TEXT_COLOR, frame_rect, 2)
+
+        # Text start position inside frame
+        y_offset = frame_rect.top + 20
+        text_x = frame_rect.left + 20
+    
 
         # --- Display transcript ---
         if self.showing_transcript:
             for i in range(self.current_transcript_index + 1):
-                rendered = self.font.render(self.transcript[i], True, BLACK)
-                
-                text_rect = rendered.get_rect()
-                text_rect.centerx = self.screen.get_width() //2
-                text_rect.y = y_offset
-                
-                self.screen.blit(rendered, text_rect)
-                y_offset += FONT_SIZE + LINE_SPACING
+                line_height = draw_centered_text(
+                    self.screen,
+                    self.font,
+                    self.transcript[i],
+                    y_offset,
+                    TEXT_COLOR
+                )
+                y_offset += line_height + LINE_SPACING
         
         # Add extra vertical space before the prompt
             y_offset += 20  # extra space in pixels 
             
             prompt = self.font.render(
-            'Presione ENTER para continuar la transcripción...', True, BLACK
+            'Presione ENTER para continuar la transcripción...', True, TEXT_COLOR
             )
             
             prompt_rect = prompt.get_rect()
@@ -109,26 +123,49 @@ class Mission1Scene:
 
         # --- Display "All questions completed" message ---
         elif self.current_question_index >= len(self.questions):
-            end_surface = self.font.render('¡Todas las preguntas completadas!', True, BLACK)
-            self.screen.blit(end_surface, (50, y_offset))
+            
+            draw_centered_text(
+                self.screen,
+                self.font,
+                '¡Todas las preguntas completadas!',
+                y_offset,
+                TEXT_COLOR
+            )
+            
 
         # --- Display current question, input, and feedback ---
         else:
             # Display current question
             question = self.questions[self.current_question_index]['prompt']
-            q_surface = self.font.render(question, True, BLACK)
-            self.screen.blit(q_surface, (50, y_offset))
-            y_offset += FONT_SIZE + 20
+            line_height = draw_centered_text(
+                self.screen,
+                self.font,
+                question,
+                y_offset,
+                TEXT_COLOR
+            )
+            y_offset += line_height + LINE_SPACING
 
             # Display player input
-            input_surface = self.font.render('Respuesta: ' + self.input_text, True, BLACK)
-            self.screen.blit(input_surface, (50, y_offset))
-            y_offset += FONT_SIZE + 20
+            line_height = draw_centered_text(
+                self.screen,
+                self.font,
+                'Respuesta: ' + self.input_text,
+                y_offset,
+                TEXT_COLOR
+            )
+            y_offset += line_height + LINE_SPACING
+
 
             # Display feedback if it exists
             if self.feedback:
-                feedback_surface = self.font.render(self.feedback, True, BLACK)
-                self.screen.blit(feedback_surface, (50, y_offset))
+                draw_centered_text(
+                self.screen,
+                self.font,
+                self.feedback,
+                y_offset,
+                TEXT_COLOR
+                )
 
 
         
