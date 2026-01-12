@@ -2,8 +2,9 @@ import pygame
 import os 
 from settings import TEXT_COLOR, FONT_NAME, FONT_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT,SCREEN_MARGIN, FRAME_WIDTH
 
+
 class IntroScene: 
-    def __init__(self, screen):
+    def __init__(self, screen, game_state):
         self.screen = screen 
         self.screen_rect = pygame.Rect(
             SCREEN_MARGIN,

@@ -6,8 +6,11 @@ from utils.text import draw_centered_text
 
 
 class Mission1Scene:
-    def __init__(self, screen):
+    def __init__(self, screen, game_state):
         self.screen = screen
+        self.game_state = game_state
+        self.game_state.current_mission
+        self.game_state.missions_completed
         self.font = pygame.font.SysFont(FONT_NAME, FONT_SIZE)
         
         
