@@ -1,0 +1,9 @@
+{
+    "username": "Facundo",
+    "current_mission": "mission_1",
+    "missions_completed": {
+        "mission_1": "completed"
+    },
+    "last_updated": "2026-01-14T11:36:55.375153+00:00",
+    "game_version": "0.1"
+}
