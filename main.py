@@ -10,24 +10,16 @@ def main():
     pygame.display.set_caption("Spanish Language Training")
     clock = pygame.time.Clock()
 
-    # --- Start game state with defaults if empty ---
-    initial_save = {
-        "username": "Player1",
-        "current_mission": None,
-        "missions_completed": {},
-        "last_updated": None,
-        "game_version": "0.1"
-    }
-    game_state = GameState(initial_save)
+    # Start with empty game state; CharacterCreationScene will populate it
+    game_state = GameState({})
 
-    # --- Start with character creation ---
+    # Start with character creation
     scene = CharacterCreationScene(screen, game_state)
 
     running = True
     while running:
         clock.tick(FPS)
 
-        # --- Event handling ---
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 save_game(game_state.to_dict())
@@ -35,26 +27,24 @@ def main():
             else:
                 scene.handle_event(event)
 
-        # --- Update scene ---
         scene.update()
 
-        # --- Handle scene transitions ---
+        # Scene transition
         if scene.finished:
             if hasattr(scene, "next_scene") and callable(scene.next_scene):
                 next_scene_obj = scene.next_scene()
                 if next_scene_obj:
                     scene = next_scene_obj
                 else:
+                    # No next scene returned, quit
+                    save_game(game_state.to_dict())
                     running = False
-            else:
-                running = False
 
-        # --- Draw scene ---
+        # Draw current scene
         scene.draw()
         pygame.display.flip()
 
     pygame.quit()
-
 
 if __name__ == "__main__":
     main()
