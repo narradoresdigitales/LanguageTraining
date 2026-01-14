@@ -7,13 +7,24 @@ class IntroScene:
         self.screen = screen
         self.game_state = game_state
         self.finished = False
+        self._next_scene_name = None
+
+        self.screen_rect = pygame.Rect(
+            SCREEN_MARGIN,
+            SCREEN_MARGIN,
+            self.screen.get_width() - SCREEN_MARGIN * 2,
+            self.screen.get_height() - SCREEN_MARGIN * 2
+        )
         self.font = pygame.font.SysFont(FONT_NAME, FONT_SIZE)
-        self.screen_rect = pygame.Rect(SCREEN_MARGIN, SCREEN_MARGIN,
-                                       SCREEN_WIDTH - SCREEN_MARGIN * 2,
-                                       SCREEN_HEIGHT - SCREEN_MARGIN * 2)
+
+        # Load and scale background image
         bg_path = os.path.join('assets', 'images', 'briefing room.png')
-        self.background = pygame.image.load(bg_path).convert()
-        self.background = pygame.transform.scale(self.background, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        if os.path.exists(bg_path):
+            self.background = pygame.image.load(bg_path).convert()
+            self.background = pygame.transform.scale(self.background, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        else:
+            self.background = None
+
         self.text = [
             'Mission 1: Initial Contact',
             '',
@@ -26,21 +37,32 @@ class IntroScene:
 
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
+            # Any key press advances to Mission1
             self.finished = True
+            self._next_scene_name = "MISSION1"
 
     def update(self):
         pass
 
     def draw(self):
-        self.screen.blit(self.background, (0, 0))
+        if self.background:
+            self.screen.blit(self.background, (0, 0))
+        else:
+            self.screen.fill((0, 0, 0))
+
         pygame.draw.rect(self.screen, TEXT_COLOR, self.screen_rect, FRAME_WIDTH)
+
         y = 185
         for line in self.text:
             rendered = self.font.render(line, True, TEXT_COLOR)
-            rect = rendered.get_rect(centerx=SCREEN_WIDTH // 2, y=y)
-            self.screen.blit(rendered, rect)
+            text_rect = rendered.get_rect(centerx=self.screen.get_width() // 2)
+            text_rect.y = y
+            self.screen.blit(rendered, text_rect)
             y += 35
 
     def next_scene(self):
-        from scenes.mission1 import Mission1Scene
-        return Mission1Scene(self.screen, self.game_state)
+        """Return the next scene object based on next_scene_name."""
+        if self._next_scene_name == "MISSION1":
+            from scenes.mission1 import Mission1Scene
+            return Mission1Scene(self.screen, self.game_state)
+        return None

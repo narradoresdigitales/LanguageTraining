@@ -1,8 +1,9 @@
 # scenes/character_creation.py
 import pygame
 import json
+import os
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT, TEXT_COLOR, FONT_NAME, FONT_SIZE, LINE_SPACING
-from save.save_manager import save_game
+from save.save_manager import save_game, create_new_save
 
 class CharacterCreationScene:
     def __init__(self, screen, game_state):
@@ -10,59 +11,73 @@ class CharacterCreationScene:
         self.game_state = game_state
         self.font = pygame.font.SysFont(FONT_NAME, FONT_SIZE)
         self.finished = False
-        self.next_scene_obj = None  # This will hold the next scene
-        self.step = 0  # 0 = enter username, 1 = enter password
-        self.input_text = ""
+        self.next_scene_obj = None
+
+        # Input
         self.username = ""
         self.password = ""
-        self.message = "Enter a username:"
+        self.input_mode = "username"  # "username" or "password"
+        self.message = "Enter your username:"
 
     def handle_event(self, event):
         if event.type != pygame.KEYDOWN:
             return
 
         if event.key == pygame.K_BACKSPACE:
-            self.input_text = self.input_text[:-1]
+            if self.input_mode == "username":
+                self.username = self.username[:-1]
+            else:
+                self.password = self.password[:-1]
+
         elif event.key == pygame.K_RETURN:
-            if self.step == 0:
-                self.username = self.input_text.strip()
-                self.input_text = ""
-                self.step = 1
-                self.message = "Enter a password:"
-            elif self.step == 1:
-                self.password = self.input_text.strip()
-                self.input_text = ""
+            if self.input_mode == "username":
+                if self.username.strip() == "":
+                    self.message = "Username cannot be empty!"
+                else:
+                    self.input_mode = "password"
+                    self.message = "Enter your password (optional):"
+            else:
+                self._create_player()
                 self.finished = True
-                # Save character data
-                self.game_state.username = self.username
-                save_data = {
-                    "username": self.username,
-                    "password": self.password,
-                    "current_mission": None,
-                    "missions_completed": {},
-                    "last_updated": "",
-                    "game_version": "0.1"
-                }
-                save_game(save_data)
+
         elif event.unicode.isprintable():
-            self.input_text += event.unicode
+            if self.input_mode == "username":
+                self.username += event.unicode
+            else:
+                self.password += event.unicode
+
+    def _create_player(self):
+        """Save player and initialize GameState."""
+        save_data = create_new_save(self.username)
+        save_data["password"] = self.password  # store password locally (simple for now)
+        save_game(save_data)
+
+        # Initialize game state
+        self.game_state.username = self.username
+        self.game_state.current_mission = save_data["current_mission"]
+        self.game_state.missions_completed = save_data["missions_completed"]
+        self.game_state.game_version = save_data["game_version"]
+
+        # Next scene is MainMenuScene
+        from scenes.main_menu import MainMenuScene
+        self.next_scene_obj = MainMenuScene(self.screen, self.game_state)
 
     def update(self):
         pass
 
     def draw(self):
         self.screen.fill((0, 0, 0))
-        y = 200
-        rendered = self.font.render(self.message, True, TEXT_COLOR)
-        rect = rendered.get_rect(centerx=SCREEN_WIDTH//2, y=y)
-        self.screen.blit(rendered, rect)
+        y = 150
 
+        # Show message
+        rendered = self.font.render(self.message, True, TEXT_COLOR)
+        self.screen.blit(rendered, (SCREEN_WIDTH // 2 - rendered.get_width() // 2, y))
         y += 50
-        rendered = self.font.render(self.input_text, True, TEXT_COLOR)
-        rect = rendered.get_rect(centerx=SCREEN_WIDTH//2, y=y)
-        self.screen.blit(rendered, rect)
+
+        # Show input
+        current_input = self.username if self.input_mode == "username" else "*" * len(self.password)
+        rendered = self.font.render(current_input, True, TEXT_COLOR)
+        self.screen.blit(rendered, (SCREEN_WIDTH // 2 - rendered.get_width() // 2, y))
 
     def next_scene(self):
-        """Return the next scene after character creation, e.g., MainMenuScene."""
-        from scenes.main_menu import MainMenuScene
-        return MainMenuScene(self.screen, self.game_state)
+        return self.next_scene_obj
