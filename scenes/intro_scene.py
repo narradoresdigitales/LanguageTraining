@@ -1,5 +1,4 @@
 import pygame
-import os
 from settings import TEXT_COLOR, FONT_NAME, FONT_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_MARGIN, FRAME_WIDTH
 
 class IntroScene:
@@ -16,14 +15,6 @@ class IntroScene:
             self.screen.get_height() - SCREEN_MARGIN * 2
         )
         self.font = pygame.font.SysFont(FONT_NAME, FONT_SIZE)
-
-        # Load and scale background image
-        bg_path = os.path.join('assets', 'images', 'briefing room.png')
-        if os.path.exists(bg_path):
-            self.background = pygame.image.load(bg_path).convert()
-            self.background = pygame.transform.scale(self.background, (SCREEN_WIDTH, SCREEN_HEIGHT))
-        else:
-            self.background = None
 
         self.text = [
             'Mission 1: Initial Contact',
@@ -45,20 +36,26 @@ class IntroScene:
         pass
 
     def draw(self):
-        if self.background:
-            self.screen.blit(self.background, (0, 0))
-        else:
-            self.screen.fill((0, 0, 0))
+        # Black background (Matrix terminal style)
+        self.screen.fill((0, 0, 0))
 
-        pygame.draw.rect(self.screen, TEXT_COLOR, self.screen_rect, FRAME_WIDTH)
+        # Terminal frame
+        pygame.draw.rect(
+            self.screen,
+            TEXT_COLOR,
+            self.screen_rect,
+            FRAME_WIDTH
+        )
 
-        y = 185
+        # Draw text
+        y = self.screen_rect.top + 80
         for line in self.text:
             rendered = self.font.render(line, True, TEXT_COLOR)
-            text_rect = rendered.get_rect(centerx=self.screen.get_width() // 2)
-            text_rect.y = y
-            self.screen.blit(rendered, text_rect)
+            rect = rendered.get_rect(centerx=self.screen.get_width() // 2)
+            rect.y = y
+            self.screen.blit(rendered, rect)
             y += 35
+
 
     def next_scene(self):
         """Return the next scene object based on next_scene_name."""

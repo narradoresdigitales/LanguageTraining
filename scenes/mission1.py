@@ -96,7 +96,7 @@ class Mission1Scene:
                 y_offset += line_height + LINE_SPACING
 
             y_offset += 20
-            prompt = self.font.render('Presione ENTER para continuar la transcripción...', True, TEXT_COLOR)
+            prompt = self.font.render('(Presione ENTER para continuar la transcripción...)', True, TEXT_COLOR)
             prompt_rect = prompt.get_rect(centerx=self.screen.get_width() // 2)
             prompt_rect.y = y_offset
             self.screen.blit(prompt, prompt_rect)
