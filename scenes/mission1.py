@@ -114,14 +114,18 @@ class Mission1Scene:
         else:
             draw_centered_text(self.screen, self.font, '¡Todas las preguntas completadas!', y_offset, TEXT_COLOR)
 
-    def next_scene(self):
-        """Return next scene based on finished mission."""
-        if self._next_scene_name == "MISSION_OFFER":
-            from scenes.mission_offer import MissionOfferScene
-            return MissionOfferScene(self.screen, self.game_state)
+    
+    # ---------------------------
+    # SCENE TRANSITION
+    # ---------------------------
+    
+    def next_scene(self):    
+        """
+        Return the next scene object after this mission.
+        Now points to the MissionOfferScene.
+        """
+        from scenes.mission_offer import MissionOfferScene
+        return MissionOfferScene(self.screen, self.game_state)
+
         
-        if self._next_scene_name == 'MAIN_MENU':
-            from scenes.mission_offer import MainMenuScene
-            return MainMenuScene(self.screen, self.game_state)
         
-        return None
