@@ -9,7 +9,7 @@ from settings import (
     FRAME_WIDTH,
 )
 
-class IntroScene:
+class MissionOfferScene:
     def __init__(self, screen, game_state):
         self.screen = screen
         self.game_state = game_state
@@ -26,22 +26,23 @@ class IntroScene:
         )
 
         self.text = [
-            "== CANAL SEGURO ESTABLECIDO ==",
+            "== MENSAJE PRIORITARIO ==",
             "",
             "ORIGEN: COMANDO LINGÜÍSTICO",
-            "DESTINO: OPERADOR",
             "",
-            "Hemos interceptado un mensaje cifrado.",
+            "Su desempeño en la misión anterior",
+            "ha sido evaluado.",
             "",
-            "Usted ha sido seleccionado para",
-            "una misión de contacto inicial.",
+            "RESULTADO: SATISFACTORIO",
             "",
-            "OBJETIVO:",
-            "Obtener información clave.",
+            "Tenemos una segunda misión disponible.",
             "",
-            "IDIOMA OPERATIVO: ESPAÑOL",
+            "Nivel de riesgo: MODERADO",
+            "Importancia estratégica: ALTA",
             "",
-            "Presione cualquier tecla para continuar..."
+            "¿Acepta participar en la Misión 2?",
+            "",
+            "[A] ACEPTAR    [D] RECHAZAR"
         ]
 
     # ---------------------------
@@ -49,8 +50,12 @@ class IntroScene:
     # ---------------------------
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
-            self.finished = True
-            self._next_scene_name = "MISSION1"
+            if event.key == pygame.K_a:
+                self.finished = True
+                self._next_scene_name = "MISSION2"
+            elif event.key == pygame.K_d:
+                self.finished = True
+                self._next_scene_name = "MAIN_MENU"
 
     def update(self):
         pass
@@ -59,7 +64,7 @@ class IntroScene:
     # DRAW
     # ---------------------------
     def draw(self):
-        self.screen.fill((0, 0, 0))  # Matrix black
+        self.screen.fill((0, 0, 0))
         pygame.draw.rect(self.screen, TEXT_COLOR, self.screen_rect, FRAME_WIDTH)
 
         y = self.screen_rect.top + 30
@@ -73,7 +78,13 @@ class IntroScene:
     # SCENE TRANSITION
     # ---------------------------
     def next_scene(self):
-        if self._next_scene_name == "MISSION1":
-            from scenes.mission1 import Mission1Scene
-            return Mission1Scene(self.screen, self.game_state)
+        if self._next_scene_name == "MISSION2":
+            from scenes.mission2 import Mission2Scene  # create later
+            return Mission2Scene(self.screen, self.game_state)
+
+        if self._next_scene_name == "MAIN_MENU":
+            from scenes.main_menu import MainMenuScene
+            return MainMenuScene(self.screen, self.game_state)
+
         return None
+

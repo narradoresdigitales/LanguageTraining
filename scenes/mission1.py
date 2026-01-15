@@ -73,7 +73,7 @@ class Mission1Scene:
                 self.game_state.missions_completed['mission_1'] = 'completed'
                 save_game(self.game_state.to_dict())
                 self.finished = True
-                self._next_scene_name = "MAIN_MENU"
+                self._next_scene_name = "MISSION_OFFER"
 
     def update(self):
         pass
@@ -116,7 +116,12 @@ class Mission1Scene:
 
     def next_scene(self):
         """Return next scene based on finished mission."""
-        if self._next_scene_name == "MAIN_MENU":
-            from scenes.main_menu import MainMenuScene
+        if self._next_scene_name == "MISSION_OFFER":
+            from scenes.mission_offer import MissionOfferScene
+            return MissionOfferScene(self.screen, self.game_state)
+        
+        if self._next_scene_name == 'MAIN_MENU':
+            from scenes.mission_offer import MainMenuScene
             return MainMenuScene(self.screen, self.game_state)
+        
         return None
