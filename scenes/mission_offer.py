@@ -1,17 +1,25 @@
+# mission_offer.py
 import pygame
-from settings import SCREEN_WIDTH, SCREEN_HEIGHT, TEXT_COLOR, FONT_NAME, FONT_SIZE, LINE_SPACING
-from save.save_manager import save_game
+from settings import TEXT_COLOR, FONT_NAME, FONT_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_MARGIN, FRAME_WIDTH
+from utils.typewriter import TypewriterText
+from scenes.main_menu import MainMenuScene  # fallback scene after offer
 
 class MissionOfferScene:
     def __init__(self, screen, game_state):
         self.screen = screen
         self.game_state = game_state
-        self.font = pygame.font.SysFont(FONT_NAME, FONT_SIZE)
-
         self.finished = False
         self._next_scene_name = None
 
-        # Text message in Spanish
+        self.font = pygame.font.SysFont(FONT_NAME, FONT_SIZE)
+
+        self.screen_rect = pygame.Rect(
+            SCREEN_MARGIN,
+            SCREEN_MARGIN,
+            SCREEN_WIDTH - SCREEN_MARGIN * 2,
+            SCREEN_HEIGHT - SCREEN_MARGIN * 2
+        )
+
         self.text = [
             "== MENSAJE PRIORITARIO ==",
             "",
@@ -32,6 +40,8 @@ class MissionOfferScene:
             "[A] ACEPTAR    [D] RECHAZAR"
         ]
 
+        self.typewriter = TypewriterText(self.text, typing_speed=35)
+
     # ---------------------------
     # INPUT
     # ---------------------------
@@ -39,51 +49,58 @@ class MissionOfferScene:
         if event.type != pygame.KEYDOWN:
             return
 
-        if event.key == pygame.K_a:
-            self._accept()
-        elif event.key == pygame.K_d:
-            self._decline()
-
-    def _accept(self):
-        self.game_state.mission2_accepted = True
-        self._next_scene_name = "MISSION2"
-        self.finished = True
-        save_game(self.game_state.to_dict())
-
-    def _decline(self):
-        self.game_state.mission2_accepted = False
-        self._next_scene_name = "MAIN_MENU"
-        self.finished = True
-        save_game(self.game_state.to_dict())
+        if not self.typewriter.finished:
+            self.typewriter.skip()
+        else:
+            if event.key == pygame.K_a:
+                self._next_scene_name = "MISSION2"
+                self.finished = True
+            elif event.key == pygame.K_d:
+                self._next_scene_name = "MAIN_MENU"
+                self.finished = True
 
     # ---------------------------
     # UPDATE
     # ---------------------------
     def update(self):
-        pass
+        self.typewriter.update()
 
     # ---------------------------
     # DRAW
     # ---------------------------
     def draw(self):
         self.screen.fill((0, 0, 0))
-        y = 50
+        pygame.draw.rect(self.screen, TEXT_COLOR, self.screen_rect, FRAME_WIDTH)
 
-        # Draw text in green
-        for line in self.text:
-            rendered = self.font.render(line, True, (0, 255, 0))
-            rect = rendered.get_rect(centerx=SCREEN_WIDTH // 2, y=y)
+        visible_lines = self.typewriter.get_visible_lines()
+        line_height = FONT_SIZE + 5
+
+        frame_top = self.screen_rect.top + 20
+        frame_bottom = self.screen_rect.bottom - 20
+        total_text_height = len(visible_lines) * line_height
+        y = frame_top + (frame_bottom - frame_top - total_text_height) // 2
+
+        last_rect = None
+        for line in visible_lines:
+            rendered = self.font.render(line, True, TEXT_COLOR)
+            rect = rendered.get_rect(centerx=self.screen.get_width() // 2, y=y)
             self.screen.blit(rendered, rect)
-            y += FONT_SIZE + LINE_SPACING
+            last_rect = rect
+            y += line_height
+
+        # Blinking cursor
+        cursor = self.typewriter.get_cursor()
+        if cursor and last_rect and not self.typewriter.finished:
+            cursor_surface = self.font.render(cursor, True, TEXT_COLOR)
+            self.screen.blit(cursor_surface, (last_rect.right + 5, last_rect.y))
 
     # ---------------------------
-    # SCENE TRANSITION
+    # NEXT SCENE
     # ---------------------------
     def next_scene(self):
         if self._next_scene_name == "MISSION2":
-            from scenes.mission2 import Mission2Scene  # stub for now
+            from scenes.mission2 import Mission2Scene
             return Mission2Scene(self.screen, self.game_state)
         elif self._next_scene_name == "MAIN_MENU":
-            from scenes.main_menu import MainMenuScene
             return MainMenuScene(self.screen, self.game_state)
         return None

@@ -1,7 +1,8 @@
-# scenes/mission2.py
+# mission2.py
 import pygame
 from settings import TEXT_COLOR, FONT_NAME, FONT_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_MARGIN, FRAME_WIDTH
-from save.save_manager import save_game
+from utils.typewriter import TypewriterText
+from scenes.main_menu import MainMenuScene
 
 class Mission2Scene:
     def __init__(self, screen, game_state):
@@ -9,6 +10,7 @@ class Mission2Scene:
         self.game_state = game_state
         self.finished = False
         self._next_scene_name = None
+
         self.font = pygame.font.SysFont(FONT_NAME, FONT_SIZE)
 
         self.screen_rect = pygame.Rect(
@@ -18,38 +20,74 @@ class Mission2Scene:
             SCREEN_HEIGHT - SCREEN_MARGIN * 2
         )
 
-        # Temporary text for now
         self.text = [
             "== MISION 2 ==",
             "",
-            "Bienvenido a la segunda misión.",
-            "Pronto tendrás tus instrucciones.",
+            "Ha aceptado participar en la segunda misión.",
             "",
-            "Presiona cualquier tecla para continuar..."
+            "OBJETIVO: Recolectar información avanzada",
+            "sobre operaciones en el terreno.",
+            "",
+            "Recuerde aplicar el registro correcto en español.",
+            "",
+            "Presione cualquier tecla para continuar..."
         ]
 
+        self.typewriter = TypewriterText(self.text, typing_speed=35)
+
+    # ---------------------------
+    # INPUT
+    # ---------------------------
     def handle_event(self, event):
-        if event.type == pygame.KEYDOWN:
+        if event.type != pygame.KEYDOWN:
+            return
+
+        if not self.typewriter.finished:
+            self.typewriter.skip()
+        else:
+            # For now, mission 2 completes and returns to main menu
             self.finished = True
-            self._next_scene_name = "MAIN_MENU"  # For now, go back to main menu
+            self._next_scene_name = "MAIN_MENU"
 
+    # ---------------------------
+    # UPDATE
+    # ---------------------------
     def update(self):
-        pass
+        self.typewriter.update()
 
+    # ---------------------------
+    # DRAW
+    # ---------------------------
     def draw(self):
         self.screen.fill((0, 0, 0))
         pygame.draw.rect(self.screen, TEXT_COLOR, self.screen_rect, FRAME_WIDTH)
 
-        y = 100
-        for line in self.text:
-            rendered = self.font.render(line, True, TEXT_COLOR)
-            rect = rendered.get_rect(centerx=SCREEN_WIDTH // 2)
-            rect.y = y
-            self.screen.blit(rendered, rect)
-            y += 35
+        visible_lines = self.typewriter.get_visible_lines()
+        line_height = FONT_SIZE + 5
 
+        frame_top = self.screen_rect.top + 20
+        frame_bottom = self.screen_rect.bottom - 20
+        total_text_height = len(visible_lines) * line_height
+        y = frame_top + (frame_bottom - frame_top - total_text_height) // 2
+
+        last_rect = None
+        for line in visible_lines:
+            rendered = self.font.render(line, True, TEXT_COLOR)
+            rect = rendered.get_rect(centerx=self.screen.get_width() // 2, y=y)
+            self.screen.blit(rendered, rect)
+            last_rect = rect
+            y += line_height
+
+        # Blinking cursor
+        cursor = self.typewriter.get_cursor()
+        if cursor and last_rect and not self.typewriter.finished:
+            cursor_surface = self.font.render(cursor, True, TEXT_COLOR)
+            self.screen.blit(cursor_surface, (last_rect.right + 5, last_rect.y))
+
+    # ---------------------------
+    # NEXT SCENE
+    # ---------------------------
     def next_scene(self):
         if self._next_scene_name == "MAIN_MENU":
-            from scenes.main_menu import MainMenuScene
             return MainMenuScene(self.screen, self.game_state)
         return None
