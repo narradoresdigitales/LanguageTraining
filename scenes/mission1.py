@@ -6,6 +6,7 @@ from utils.text import draw_centered_text
 from utils.typewriter import TypewriterText
 from save.save_manager import save_game
 
+
 class Mission1Scene:
     def __init__(self, screen, game_state):
         self.screen = screen
@@ -30,7 +31,6 @@ class Mission1Scene:
         self.current_question_index = 0
         self.input_text = ''
         self.feedback = ''
-        self.submitted = False
 
     # ---------------------------
     # INPUT
@@ -57,12 +57,10 @@ class Mission1Scene:
             if event.key == pygame.K_BACKSPACE:
                 self.input_text = self.input_text[:-1]
             elif event.key == pygame.K_RETURN:
-                if self.input_text.strip() and not self.submitted:
+                if self.input_text.strip():
                     self.evaluate_response()
-                    self.submitted = True
             elif event.unicode.isprintable():
                 self.input_text += event.unicode
-                self.submitted = False  # reset after typing
 
     # ---------------------------
     # LOGIC
@@ -78,7 +76,6 @@ class Mission1Scene:
             self.feedback = current_question['npc_response_success']
             self.current_question_index += 1
             self.input_text = ''
-            self.submitted = False
             if self.current_question_index >= len(self.questions):
                 self.game_state.current_mission = 'mission_1'
                 self.game_state.missions_completed['mission_1'] = 'completed'
@@ -88,7 +85,6 @@ class Mission1Scene:
         else:
             self.feedback = current_question['npc_response_failure'] + ' Faltan: ' + ', '.join(missing)
             self.input_text = ''
-            self.submitted = False
 
     # ---------------------------
     # UPDATE
@@ -132,29 +128,19 @@ class Mission1Scene:
                     (last_rect.right + 5, last_rect.y)
                 )
 
-            # Hint to press ENTER
+            # Hint
             if self.typewriter.finished:
-                hint = self.font.render(
-                    "(ENTER para continuar)",
-                    True,
-                    TEXT_COLOR
-                )
+                hint = self.font.render("(ENTER para continuar)", True, TEXT_COLOR)
                 hint_rect = hint.get_rect(centerx=self.screen.get_width() // 2, y=y + 10)
                 self.screen.blit(hint, hint_rect)
 
-        else:  # Questions
+        else:
+            # Question
             question = self.questions[self.current_question_index]['prompt']
             draw_centered_text(self.screen, self.font, question, y, TEXT_COLOR)
             y += FONT_SIZE + LINE_SPACING
-            draw_centered_text(
-                self.screen,
-                self.font,
-                "Respuesta: " + self.input_text,
-                y,
-                TEXT_COLOR
-            )
+            draw_centered_text(self.screen, self.font, "Respuesta: " + self.input_text, y, TEXT_COLOR)
             y += FONT_SIZE + LINE_SPACING
-
             if self.feedback:
                 draw_centered_text(self.screen, self.font, self.feedback, y, TEXT_COLOR)
 

@@ -3,6 +3,7 @@ from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
 from scenes.character_creation import CharacterCreationScene
 from save.save_manager import save_game
 from game.state.game_state import GameState
+import os
 
 def main():
     pygame.init()
@@ -10,6 +11,17 @@ def main():
     pygame.display.set_caption("Spanish Language Training")
     clock = pygame.time.Clock()
 
+    # --- Load and play background music ---
+    music_path = os.path.join('assets', 'audio', 'retro_game.wav')
+    if os.path.exists(music_path):
+        pygame.mixer.music.load(music_path)
+        pygame.mixer.music.set_volume(0.25)  # Adjust volume (0.0 to 1.0)
+        pygame.mixer.music.play(-1)  # Loop indefinitely
+    
+    
+    
+    
+    
     # Start with empty game state; CharacterCreationScene will populate it
     game_state = GameState({})
 
