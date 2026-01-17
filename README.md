@@ -16,7 +16,7 @@ The game places the player in a series of missions where they interact with NPCs
 **Purpose:**  
 The primary purpose of this software is to explore the intersection of game development and educational technology. By combining Python programming, Pygame graphics, and interactive text-based scenarios, this project demonstrates how software can be used as a learning tool while reinforcing practical coding skills.
 
-[Software Demo Video](http://youtube.link.goes.here)
+[Software Demo Video](https://youtu.be/b4UElMj7jN0)
 
 ---
 
