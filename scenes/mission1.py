@@ -2,8 +2,10 @@ import pygame
 import json
 import os
 from settings import TEXT_COLOR, FONT_NAME, FONT_SIZE, LINE_SPACING
+from utils.typewriter import TypewriterText
 from utils.text import draw_centered_text
 from save.save_manager import save_game
+
 
 class Mission1Scene:
     def __init__(self, screen, game_state):
@@ -30,19 +32,42 @@ class Mission1Scene:
         self.showing_transcript = True
         self.submitted = False
 
+        # Typewriter for transcript
+        self.typewriter = TypewriterText(
+            [self.transcript[self.current_transcript_index]],
+            typing_speed=30
+        )
+
+    # ---------------------------
+    # INPUT
+    # ---------------------------
     def handle_event(self, event):
         if event.type != pygame.KEYDOWN:
             return
 
+        # --- TRANSCRIPT MODE ---
+        if self.showing_transcript:
+            if event.key == pygame.K_RETURN:
+                if not self.typewriter.finished:
+                    self.typewriter.skip()
+                else:
+                    self.current_transcript_index += 1
+                    if self.current_transcript_index >= len(self.transcript):
+                        self.showing_transcript = False
+                    else:
+                        # Create a NEW typewriter for the next line
+                        self.typewriter = TypewriterText(
+                            [self.transcript[self.current_transcript_index]],
+                            typing_speed=30
+                        )
+            return
+
+        # --- QUESTION MODE ---
         if event.key == pygame.K_BACKSPACE:
             self.input_text = self.input_text[:-1]
 
         elif event.key == pygame.K_RETURN:
-            if self.showing_transcript:
-                self.current_transcript_index += 1
-                if self.current_transcript_index >= len(self.transcript):
-                    self.showing_transcript = False
-            elif self.input_text.strip() and not self.submitted:
+            if self.input_text.strip() and not self.submitted:
                 self.evaluate_response()
                 self.submitted = True
 
@@ -50,6 +75,9 @@ class Mission1Scene:
             self.input_text += event.unicode
             self.submitted = False
 
+    # ---------------------------
+    # GAME LOGIC
+    # ---------------------------
     def evaluate_response(self):
         response = self.input_text.lower()
         current_question = self.questions[self.current_question_index]
@@ -58,26 +86,23 @@ class Mission1Scene:
         missing = [word for word in required if word not in response]
 
         if not missing:
-            self.feedback = current_question['npc_response_success']
-        else:
-            self.feedback = current_question['npc_response_failure'] + ' Faltan: ' + ', '.join(missing)
-
-        self.input_text = ''
-
-        if not missing:
             self.current_question_index += 1
-            self.feedback = ''
             if self.current_question_index >= len(self.questions):
-                self.feedback = '¡Misión completada!'
                 self.game_state.current_mission = 'mission_1'
                 self.game_state.missions_completed['mission_1'] = 'completed'
                 save_game(self.game_state.to_dict())
                 self.finished = True
                 self._next_scene_name = "MISSION_OFFER"
 
-    def update(self):
-        pass
+        self.input_text = ''
 
+    def update(self):
+        if self.showing_transcript:
+            self.typewriter.update()
+
+    # ---------------------------
+    # DRAW
+    # ---------------------------
     def draw(self):
         self.screen.fill((0, 0, 0))
         margin = 40
@@ -88,44 +113,55 @@ class Mission1Scene:
         )
         pygame.draw.rect(self.screen, TEXT_COLOR, frame_rect, 2)
 
-        y_offset = frame_rect.top + 20
+        y = frame_rect.top + 40
 
         if self.showing_transcript:
-            for i in range(self.current_transcript_index + 1):
-                line_height = draw_centered_text(self.screen, self.font, self.transcript[i], y_offset, TEXT_COLOR)
-                y_offset += line_height + LINE_SPACING
+            visible_lines = self.typewriter.get_visible_lines()
+            last_rect = None
 
-            y_offset += 20
-            prompt = self.font.render('(Presione ENTER para continuar la transcripción...)', True, TEXT_COLOR)
-            prompt_rect = prompt.get_rect(centerx=self.screen.get_width() // 2)
-            prompt_rect.y = y_offset
-            self.screen.blit(prompt, prompt_rect)
+            for line in visible_lines:
+                rendered = self.font.render(line, True, TEXT_COLOR)
+                rect = rendered.get_rect(centerx=self.screen.get_width() // 2, y=y)
+                self.screen.blit(rendered, rect)
+                last_rect = rect
+                y += FONT_SIZE + LINE_SPACING
 
-        elif self.current_question_index < len(self.questions):
-            question = self.questions[self.current_question_index]['prompt']
-            line_height = draw_centered_text(self.screen, self.font, question, y_offset, TEXT_COLOR)
-            y_offset += line_height + LINE_SPACING
+            # Cursor
+            cursor = self.typewriter.get_cursor()
+            if cursor and last_rect and not self.typewriter.finished:
+                cursor_surface = self.font.render(cursor, True, TEXT_COLOR)
+                self.screen.blit(
+                    cursor_surface,
+                    (last_rect.right + 5, last_rect.y)
+                )
 
-            line_height = draw_centered_text(self.screen, self.font, 'Respuesta: ' + self.input_text, y_offset, TEXT_COLOR)
-            y_offset += line_height + LINE_SPACING
+            if self.typewriter.finished:
+                hint = self.font.render(
+                    "(ENTER para continuar)",
+                    True,
+                    TEXT_COLOR
+                )
+                hint_rect = hint.get_rect(centerx=self.screen.get_width() // 2, y=y + 10)
+                self.screen.blit(hint, hint_rect)
 
-            if self.feedback:
-                draw_centered_text(self.screen, self.font, self.feedback, y_offset, TEXT_COLOR)
         else:
-            draw_centered_text(self.screen, self.font, '¡Todas las preguntas completadas!', y_offset, TEXT_COLOR)
+            # Question mode (unchanged)
+            question = self.questions[self.current_question_index]['prompt']
+            draw_centered_text(self.screen, self.font, question, y, TEXT_COLOR)
+            y += FONT_SIZE + LINE_SPACING
+            draw_centered_text(
+                self.screen,
+                self.font,
+                "Respuesta: " + self.input_text,
+                y,
+                TEXT_COLOR
+            )
 
-    
     # ---------------------------
     # SCENE TRANSITION
     # ---------------------------
-    
-    def next_scene(self):    
-        """
-        Return the next scene object after this mission.
-        Now points to the MissionOfferScene.
-        """
-        from scenes.mission_offer import MissionOfferScene
-        return MissionOfferScene(self.screen, self.game_state)
-
-        
-        
+    def next_scene(self):
+        if self._next_scene_name == "MISSION_OFFER":
+            from scenes.mission_offer import MissionOfferScene
+            return MissionOfferScene(self.screen, self.game_state)
+        return None
