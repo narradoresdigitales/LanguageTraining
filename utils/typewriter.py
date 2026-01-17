@@ -1,56 +1,50 @@
 import pygame
+import os
 
 class TypewriterText:
-    def __init__(self, lines, typing_speed=30):
+    def __init__(self, lines, typing_speed=30, sound_path="assets/audio/typing.wav"):
         self.lines = lines
-        self.typing_speed = typing_speed
+        self.typing_speed = typing_speed  # milliseconds per character
 
-        self.current_line = 0
-        self.current_char = 0
+        # Combine all lines into one stream
+        self.total_text = "\n".join(self.lines)
+
+        self.visible_chars = 0
         self.finished = False
 
         self.last_update = pygame.time.get_ticks()
-        self.cursor_visible = True
-        self.cursor_timer = pygame.time.get_ticks()
+
+        # Optional typing sound
+        self.typing_sound = None
+        if sound_path and os.path.exists(sound_path):
+            self.typing_sound = pygame.mixer.Sound(sound_path)
+            self.typing_sound.set_volume(0.25)
 
     def update(self):
         if self.finished:
             return
 
         now = pygame.time.get_ticks()
-        if now - self.last_update > self.typing_speed:
+        if now - self.last_update >= self.typing_speed:
+            self.visible_chars += 1
             self.last_update = now
-            self.current_char += 1
 
-            if self.current_char > len(self.lines[self.current_line]):
-                self.current_char = 0
-                self.current_line += 1
+            if self.typing_sound:
+                self.typing_sound.play()
 
-                if self.current_line >= len(self.lines):
-                    self.finished = True
+            if self.visible_chars >= len(self.total_text):
+                self.visible_chars = len(self.total_text)
+                self.finished = True
 
     def skip(self):
-        self.current_line = len(self.lines)
+        self.visible_chars = len(self.total_text)
         self.finished = True
 
     def get_visible_lines(self):
-        visible = []
-
-        for i in range(self.current_line):
-            visible.append(self.lines[i])
-
-        if not self.finished and self.current_line < len(self.lines):
-            visible.append(self.lines[self.current_line][:self.current_char])
-
-        return visible
+        visible_text = self.total_text[:self.visible_chars]
+        return visible_text.split("\n")
 
     def get_cursor(self):
         if self.finished:
             return ""
-
-        now = pygame.time.get_ticks()
-        if now - self.cursor_timer > 500:
-            self.cursor_visible = not self.cursor_visible
-            self.cursor_timer = now
-
-        return "█" if self.cursor_visible else ""
+        return "_" if (pygame.time.get_ticks() // 400) % 2 == 0 else ""

@@ -2,10 +2,9 @@ import pygame
 import json
 import os
 from settings import TEXT_COLOR, FONT_NAME, FONT_SIZE, LINE_SPACING
-from utils.typewriter import TypewriterText
 from utils.text import draw_centered_text
+from utils.typewriter import TypewriterText
 from save.save_manager import save_game
-
 
 class Mission1Scene:
     def __init__(self, screen, game_state):
@@ -23,20 +22,15 @@ class Mission1Scene:
 
         self.transcript = self.dialogue_data['transcript']
         self.current_transcript_index = 0
+        self.showing_transcript = True
+        self.typewriter = TypewriterText([self.transcript[0]], typing_speed=35)
 
+        # Questions
         self.questions = self.dialogue_data['questions']
         self.current_question_index = 0
-
         self.input_text = ''
         self.feedback = ''
-        self.showing_transcript = True
         self.submitted = False
-
-        # Typewriter for transcript
-        self.typewriter = TypewriterText(
-            [self.transcript[self.current_transcript_index]],
-            typing_speed=30
-        )
 
     # ---------------------------
     # INPUT
@@ -45,38 +39,33 @@ class Mission1Scene:
         if event.type != pygame.KEYDOWN:
             return
 
-        # --- TRANSCRIPT MODE ---
         if self.showing_transcript:
-            if event.key == pygame.K_RETURN:
-                if not self.typewriter.finished:
-                    self.typewriter.skip()
+            if not self.typewriter.finished:
+                self.typewriter.skip()
+            else:
+                # Move to next transcript line
+                self.current_transcript_index += 1
+                if self.current_transcript_index < len(self.transcript):
+                    self.typewriter = TypewriterText(
+                        [self.transcript[self.current_transcript_index]],
+                        typing_speed=35
+                    )
                 else:
-                    self.current_transcript_index += 1
-                    if self.current_transcript_index >= len(self.transcript):
-                        self.showing_transcript = False
-                    else:
-                        # Create a NEW typewriter for the next line
-                        self.typewriter = TypewriterText(
-                            [self.transcript[self.current_transcript_index]],
-                            typing_speed=30
-                        )
-            return
+                    self.showing_transcript = False
 
-        # --- QUESTION MODE ---
-        if event.key == pygame.K_BACKSPACE:
-            self.input_text = self.input_text[:-1]
-
-        elif event.key == pygame.K_RETURN:
-            if self.input_text.strip() and not self.submitted:
-                self.evaluate_response()
-                self.submitted = True
-
-        elif event.unicode.isprintable():
-            self.input_text += event.unicode
-            self.submitted = False
+        else:  # Question mode
+            if event.key == pygame.K_BACKSPACE:
+                self.input_text = self.input_text[:-1]
+            elif event.key == pygame.K_RETURN:
+                if self.input_text.strip() and not self.submitted:
+                    self.evaluate_response()
+                    self.submitted = True
+            elif event.unicode.isprintable():
+                self.input_text += event.unicode
+                self.submitted = False  # reset after typing
 
     # ---------------------------
-    # GAME LOGIC
+    # LOGIC
     # ---------------------------
     def evaluate_response(self):
         response = self.input_text.lower()
@@ -86,18 +75,26 @@ class Mission1Scene:
         missing = [word for word in required if word not in response]
 
         if not missing:
+            self.feedback = current_question['npc_response_success']
             self.current_question_index += 1
+            self.input_text = ''
+            self.submitted = False
             if self.current_question_index >= len(self.questions):
                 self.game_state.current_mission = 'mission_1'
                 self.game_state.missions_completed['mission_1'] = 'completed'
                 save_game(self.game_state.to_dict())
                 self.finished = True
                 self._next_scene_name = "MISSION_OFFER"
+        else:
+            self.feedback = current_question['npc_response_failure'] + ' Faltan: ' + ', '.join(missing)
+            self.input_text = ''
+            self.submitted = False
 
-        self.input_text = ''
-
+    # ---------------------------
+    # UPDATE
+    # ---------------------------
     def update(self):
-        if self.showing_transcript:
+        if self.showing_transcript and self.typewriter:
             self.typewriter.update()
 
     # ---------------------------
@@ -135,6 +132,7 @@ class Mission1Scene:
                     (last_rect.right + 5, last_rect.y)
                 )
 
+            # Hint to press ENTER
             if self.typewriter.finished:
                 hint = self.font.render(
                     "(ENTER para continuar)",
@@ -144,8 +142,7 @@ class Mission1Scene:
                 hint_rect = hint.get_rect(centerx=self.screen.get_width() // 2, y=y + 10)
                 self.screen.blit(hint, hint_rect)
 
-        else:
-            # Question mode (unchanged)
+        else:  # Questions
             question = self.questions[self.current_question_index]['prompt']
             draw_centered_text(self.screen, self.font, question, y, TEXT_COLOR)
             y += FONT_SIZE + LINE_SPACING
@@ -156,6 +153,10 @@ class Mission1Scene:
                 y,
                 TEXT_COLOR
             )
+            y += FONT_SIZE + LINE_SPACING
+
+            if self.feedback:
+                draw_centered_text(self.screen, self.font, self.feedback, y, TEXT_COLOR)
 
     # ---------------------------
     # SCENE TRANSITION
