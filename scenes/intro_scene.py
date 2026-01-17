@@ -20,7 +20,8 @@ class IntroScene:
             SCREEN_HEIGHT - SCREEN_MARGIN * 2
         )
 
-        self.text = [
+        # Mission briefing text
+        self.text_lines = [
             "== CANAL SEGURO ESTABLECIDO ==",
             "",
             "ORIGEN: COMANDO LINGÜÍSTICO",
@@ -32,14 +33,14 @@ class IntroScene:
             "OBJETIVOS:",
             "Demostrar que su competencia de comprensión de lectura es de nivel básico.",
             "",
-            "Demostrar que razona los hecho es capáz de realizar análisis de investigación.",
+            "Demostrar que razona los hechos y es capaz de realizar análisis de investigación.",
             "",
             "IDIOMA OPERATIVO: ESPAÑOL",
             "",
             "Presione cualquier tecla para continuar..."
         ]
 
-        self.typewriter = TypewriterText(self.text, typing_speed=35)
+        self.typewriter = TypewriterText(self.text_lines, typing_speed=35)
 
     # ---------------------------
     # INPUT
@@ -48,6 +49,7 @@ class IntroScene:
         if event.type != pygame.KEYDOWN:
             return
 
+        # Skip typing if incomplete, else finish scene
         if not self.typewriter.finished:
             self.typewriter.skip()
         else:
@@ -67,9 +69,9 @@ class IntroScene:
         self.screen.fill((0, 0, 0))
         pygame.draw.rect(self.screen, TEXT_COLOR, self.screen_rect, FRAME_WIDTH)
 
+        # Center text vertically inside the frame
         visible_lines = self.typewriter.get_visible_lines()
         line_height = FONT_SIZE + 5
-
         frame_top = self.screen_rect.top + 20
         frame_bottom = self.screen_rect.bottom - 20
         total_text_height = len(visible_lines) * line_height
@@ -83,11 +85,14 @@ class IntroScene:
             last_rect = rect
             y += line_height
 
+        
         # Blinking cursor
-        cursor = self.typewriter.get_cursor()
-        if cursor and last_rect and not self.typewriter.finished:
+        cursor = self.typewriter.get_cursor(waiting_for_input=self.typewriter.finished)
+        if cursor and last_rect:
             cursor_surface = self.font.render(cursor, True, TEXT_COLOR)
-            self.screen.blit(cursor_surface, (last_rect.right + 5, last_rect.y))
+            self.screen.blit(cursor_surface, (last_rect.right + 2, last_rect.y))
+
+
 
     # ---------------------------
     # NEXT SCENE

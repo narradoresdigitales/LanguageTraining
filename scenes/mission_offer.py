@@ -2,7 +2,8 @@
 import pygame
 from settings import TEXT_COLOR, FONT_NAME, FONT_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_MARGIN, FRAME_WIDTH
 from utils.typewriter import TypewriterText
-from scenes.main_menu import MainMenuScene  # fallback scene after offer
+from scenes.mission2 import Mission2Scene
+from scenes.main_menu import MainMenuScene
 
 class MissionOfferScene:
     def __init__(self, screen, game_state):
@@ -52,12 +53,12 @@ class MissionOfferScene:
         if not self.typewriter.finished:
             self.typewriter.skip()
         else:
-            if event.key == pygame.K_a:
+            if event.key == pygame.K_a:  # Accept mission
+                self.finished = True
                 self._next_scene_name = "MISSION2"
+            elif event.key == pygame.K_d:  # Decline mission
                 self.finished = True
-            elif event.key == pygame.K_d:
                 self._next_scene_name = "MAIN_MENU"
-                self.finished = True
 
     # ---------------------------
     # UPDATE
@@ -89,17 +90,16 @@ class MissionOfferScene:
             y += line_height
 
         # Blinking cursor
-        cursor = self.typewriter.get_cursor()
-        if cursor and last_rect and not self.typewriter.finished:
+        cursor = self.typewriter.get_cursor(waiting_for_input=self.typewriter.finished)
+        if cursor and last_rect:
             cursor_surface = self.font.render(cursor, True, TEXT_COLOR)
-            self.screen.blit(cursor_surface, (last_rect.right + 5, last_rect.y))
+            self.screen.blit(cursor_surface, (last_rect.right + 2, last_rect.y))
 
     # ---------------------------
     # NEXT SCENE
     # ---------------------------
     def next_scene(self):
         if self._next_scene_name == "MISSION2":
-            from scenes.mission2 import Mission2Scene
             return Mission2Scene(self.screen, self.game_state)
         elif self._next_scene_name == "MAIN_MENU":
             return MainMenuScene(self.screen, self.game_state)
