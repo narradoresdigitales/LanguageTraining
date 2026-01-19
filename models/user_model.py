@@ -3,13 +3,16 @@ import json
 from hashlib import sha256
 from pymongo import MongoClient
 from bson.objectid import ObjectId
+from dotenv import load_dotenv
 
 DATA_PATH = "data/users.json"
 
+load_dotenv()
 
+# Get the URI
+MONGO_URI = os.getenv("MONGO_URI") 
 class UserModel:
     # MongoDB setup
-    MONGO_URI = "mongodb+srv://narradoresdigitales_db_user:Mimate9346@cluster0.2lla5ju.mongodb.net/language_game?retryWrites=true&w=majority"
     client = MongoClient(MONGO_URI) if MONGO_URI else None
     db = client["test"] 
     users_collection = db["users"] 
