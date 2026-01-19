@@ -10,7 +10,13 @@ DATA_PATH = "data/users.json"
 load_dotenv()
 
 # Get the URI
-MONGO_URI = os.getenv("MONGO_URI") 
+# Module-level MongoDB connection
+MONGO_URI = os.getenv("MONGO_URI")
+client = MongoClient(MONGO_URI) if MONGO_URI else None
+db = client["language_game"] if client is not None else None
+users_collection = db["users"] if db is not None else None
+
+
 class UserModel:
     # MongoDB setup
     client = MongoClient(MONGO_URI) if MONGO_URI else None
