@@ -17,6 +17,15 @@ class Mission1Scene:
         self._next_scene_name = None
 
         self.font = pygame.font.SysFont(FONT_NAME, FONT_SIZE)
+        
+        user_id = self.game_state.user_id  # get from authenticated user
+        
+        # Load progress
+        progress = ProgressModel.load_progress(user_id)
+        current_mission = progress["current_mission"]
+
+        # Update progress after mission completion
+        ProgressModel.update_mission(user_id, mission_id=1)
 
         # Load NPC dialogue
         path = os.path.join('data', 'npc_dialogue.json')

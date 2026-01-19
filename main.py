@@ -1,4 +1,6 @@
 import pygame
+import os
+
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
 from scenes.character_creation import CharacterCreationScene
 from save.save_manager import save_game
@@ -6,7 +8,6 @@ from game.state.game_state import GameState
 from models.progress_model import ProgressModel
 from models.user_model import UserModel
 
-import os
 
 def main():
     pygame.init()
@@ -18,23 +19,36 @@ def main():
     music_path = os.path.join('assets', 'audio', 'retro_game.wav')
     if os.path.exists(music_path):
         pygame.mixer.music.load(music_path)
-        pygame.mixer.music.set_volume(0.25)  # Adjust volume (0.0 to 1.0)
-        pygame.mixer.music.play(-1)  # Loop indefinitely
-    
-    
-    
-    
-    
-    # Start with empty game state; CharacterCreationScene will populate it
+        pygame.mixer.music.set_volume(0.25)
+        pygame.mixer.music.play(-1)
+
+    # ---------------------------
+    # USER AUTHENTICATION
+    # ---------------------------
+    USERNAME = "player1"
+    PASSWORD = "password"
+
+    # Create user if it does not exist
+    created_user = UserModel.create_user(USERNAME, PASSWORD)
+    if created_user:
+        print(f"Created new user: {USERNAME}")
+    else:
+        print(f"User {USERNAME} already exists, logging in.")
+
+    # Authenticate user
+    user = UserModel.authenticate(USERNAME, PASSWORD)
+    if user is None:
+        raise ValueError(
+            "Authentication failed: check username/password or database connection."
+        )
+
+    # ---------------------------
+    # GAME STATE INITIALIZATION
+    # ---------------------------
     game_state = GameState({})
+    game_state.user_id = user["username"]
 
-    # Start with character creation
-    scene = CharacterCreationScene(screen, game_state)
-    
-    # TEMP user setup (replace later with login)
-    user = UserModel.create_user("player1", "password") or UserModel.authenticate("player1", "password")
-    game_state.user_id = user["id"]
-
+    # Load or create progress
     saved_progress = ProgressModel.load_progress(game_state.user_id)
 
     if saved_progress:
@@ -43,7 +57,14 @@ def main():
     else:
         ProgressModel.create_progress(game_state.user_id)
 
+    # ---------------------------
+    # START FIRST SCENE
+    # ---------------------------
+    scene = CharacterCreationScene(screen, game_state)
 
+    # ---------------------------
+    # MAIN GAME LOOP
+    # ---------------------------
     running = True
     while running:
         clock.tick(FPS)
@@ -64,15 +85,14 @@ def main():
                 if next_scene_obj:
                     scene = next_scene_obj
                 else:
-                    # No next scene returned, quit
                     save_game(game_state.to_dict())
                     running = False
 
-        # Draw current scene
         scene.draw()
         pygame.display.flip()
 
     pygame.quit()
+
 
 if __name__ == "__main__":
     main()

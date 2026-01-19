@@ -1,65 +1,76 @@
-"""
-progress_model.py
-Handles gameplay progress using a local JSON fallback.
-"""
-
+# models/progress_model.py
+from .db import db
 import json
 import os
 
-DATA_PATH = "data/progress.json"
-
+JSON_PATH = "data/progress.json"
+PROGRESS_COLLECTION = db.progress
 
 class ProgressModel:
     @staticmethod
-    def _load_progress():
-        if not os.path.exists(DATA_PATH):
+    def _load_json():
+        if not os.path.exists(JSON_PATH):
             return {}
-        with open(DATA_PATH, "r", encoding="utf-8") as f:
+        with open(JSON_PATH, "r", encoding="utf-8") as f:
             return json.load(f)
 
     @staticmethod
-    def _save_progress(progress):
-        with open(DATA_PATH, "w", encoding="utf-8") as f:
+    def _save_json(progress):
+        with open(JSON_PATH, "w", encoding="utf-8") as f:
             json.dump(progress, f, indent=4)
 
     @staticmethod
     def create_progress(user_id: str):
-        progress = ProgressModel._load_progress()
-
-        if user_id not in progress:
-            progress[user_id] = {
+        # MongoDB
+        if not PROGRESS_COLLECTION.find_one({"user_id": user_id}):
+            PROGRESS_COLLECTION.insert_one({
+                "user_id": user_id,
                 "current_mission": 1,
                 "missions_completed": []
-            }
+            })
 
-        ProgressModel._save_progress(progress)
-        return progress[user_id]
+        # JSON fallback
+        progress = ProgressModel._load_json()
+        if user_id not in progress:
+            progress[user_id] = {"current_mission": 1, "missions_completed": []}
+            ProgressModel._save_json(progress)
+
+        return ProgressModel.load_progress(user_id)
 
     @staticmethod
     def load_progress(user_id: str):
-        progress = ProgressModel._load_progress()
+        record = PROGRESS_COLLECTION.find_one({"user_id": user_id})
+        if record:
+            return record
+        # fallback to JSON
+        progress = ProgressModel._load_json()
         return progress.get(user_id)
 
     @staticmethod
     def update_mission(user_id: str, mission_id: int):
-        progress = ProgressModel._load_progress()
+        # MongoDB
+        PROGRESS_COLLECTION.update_one(
+            {"user_id": user_id},
+            {
+                "$set": {"current_mission": mission_id + 1},
+                "$addToSet": {"missions_completed": mission_id}
+            },
+            upsert=True
+        )
 
+        # JSON fallback
+        progress = ProgressModel._load_json()
         if user_id not in progress:
-            ProgressModel.create_progress(user_id)
-
+            progress[user_id] = {"current_mission": 1, "missions_completed": []}
         if mission_id not in progress[user_id]["missions_completed"]:
             progress[user_id]["missions_completed"].append(mission_id)
-
         progress[user_id]["current_mission"] = mission_id + 1
-        ProgressModel._save_progress(progress)
+        ProgressModel._save_json(progress)
 
     @staticmethod
     def delete_progress(user_id: str):
-        progress = ProgressModel._load_progress()
-
+        PROGRESS_COLLECTION.delete_one({"user_id": user_id})
+        progress = ProgressModel._load_json()
         if user_id in progress:
             del progress[user_id]
-            ProgressModel._save_progress(progress)
-            return True
-
-        return False
+            ProgressModel._save_json(progress)

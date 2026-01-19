@@ -4,5 +4,11 @@
         "missions_completed": [
             1
         ]
+    },
+    "player1": {
+        "current_mission": 2,
+        "missions_completed": [
+            1
+        ]
     }
 }
