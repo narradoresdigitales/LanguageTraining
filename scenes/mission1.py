@@ -5,6 +5,8 @@ from settings import TEXT_COLOR, FONT_NAME, FONT_SIZE, LINE_SPACING
 from utils.text import draw_centered_text
 from utils.typewriter import TypewriterText
 from save.save_manager import save_game
+from models.progress_model import ProgressModel
+
 
 
 class Mission1Scene:
@@ -81,11 +83,15 @@ class Mission1Scene:
                 self.game_state.missions_completed['mission_1'] = 'completed'
                 save_game(self.game_state.to_dict())
                 self.finished = True
-                self._next_scene_name = "MISSION_OFFER"
+                self._next_scene_name = "MISSION_OFFER"       
         else:
             self.feedback = current_question['npc_response_failure'] + ' Faltan: ' + ', '.join(missing)
             self.input_text = ''
 
+        ProgressModel.update_mission(
+        self.game_state.user_id,
+        mission_id=1
+        )
     # ---------------------------
     # UPDATE
     # ---------------------------

@@ -3,6 +3,9 @@ from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
 from scenes.character_creation import CharacterCreationScene
 from save.save_manager import save_game
 from game.state.game_state import GameState
+from models.progress_model import ProgressModel
+from models.user_model import UserModel
+
 import os
 
 def main():
@@ -27,6 +30,19 @@ def main():
 
     # Start with character creation
     scene = CharacterCreationScene(screen, game_state)
+    
+    # TEMP user setup (replace later with login)
+    user = UserModel.create_user("player1", "password") or UserModel.authenticate("player1", "password")
+    game_state.user_id = user["id"]
+
+    saved_progress = ProgressModel.load_progress(game_state.user_id)
+
+    if saved_progress:
+        game_state.current_mission = saved_progress["current_mission"]
+        game_state.missions_completed = saved_progress["missions_completed"]
+    else:
+        ProgressModel.create_progress(game_state.user_id)
+
 
     running = True
     while running:
