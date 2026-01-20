@@ -89,7 +89,9 @@ class Mission1Scene:
             self.input_text = ''
             if self.current_question_index >= len(self.questions):
                 self.game_state.current_mission = 'mission_1'
-                self.game_state.missions_completed['mission_1'] = 'completed'
+                if 1 not in self.game_state.missions_completed:
+                    self.game_state.missions_completed.append(1)
+                
                 save_game(self.game_state.to_dict())
                 self.finished = True
                 self._next_scene_name = "MISSION_OFFER"       

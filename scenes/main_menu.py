@@ -68,7 +68,7 @@ class MainMenuScene:
         self._draw_centered(info, y)
         y += 40
 
-        completed = ", ".join(self.game_state.missions_completed.keys()) or "None"
+        completed = ", ".join(str(m) for m in self.game_state.missions_completed) or "None"
         self._draw_centered(f"Missions Completed: {completed}", y)
         y += 80
 

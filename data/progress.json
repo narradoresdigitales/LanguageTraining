@@ -10,5 +10,29 @@
         "missions_completed": [
             1
         ]
+    },
+    "facundo": {
+        "current_mission": 2,
+        "missions_completed": [
+            1
+        ]
+    },
+    "ale": {
+        "current_mission": 2,
+        "missions_completed": [
+            1
+        ]
+    },
+    "pipu": {
+        "current_mission": 2,
+        "missions_completed": [
+            1
+        ]
+    },
+    "pitu": {
+        "current_mission": 2,
+        "missions_completed": [
+            1
+        ]
     }
 }
