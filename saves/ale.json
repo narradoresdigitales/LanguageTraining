@@ -1,7 +1,9 @@
 {
     "username": "ale",
-    "current_mission": "mission_1",
-    "missions_completed": {},
-    "last_updated": "2026-01-20T00:22:52.244512+00:00",
+    "current_mission": 2,
+    "missions_completed": [
+        1
+    ],
+    "last_updated": "2026-01-20T00:52:33.216029+00:00",
     "game_version": "0.2"
 }
