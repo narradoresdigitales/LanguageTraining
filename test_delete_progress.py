@@ -1,6 +1,6 @@
 from models.progress_model import ProgressModel
 
-USER_ID = "player1"  # change to an existing user
+USER_ID = "maria"  # change to an existing user
 
 print("Before delete:")
 print(ProgressModel.load_progress(USER_ID))

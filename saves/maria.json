@@ -1,0 +1,9 @@
+{
+    "username": "maria",
+    "current_mission": "mission_1",
+    "missions_completed": [
+        1
+    ],
+    "last_updated": "2026-01-21T11:14:31.926317+00:00",
+    "game_version": "0.2"
+}
