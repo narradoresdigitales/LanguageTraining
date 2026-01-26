@@ -21,7 +21,7 @@ def login_view(request):
         user = UserModel.authenticate(username, password)
 
         if user:
-            request.session["user_id"] = user["id"]
+            request.session["user_id"] = user["username"]
             request.session["username"] = user["username"]
             messages.success(request, f"Logged in as {username}")
             return redirect("progress_view")
@@ -50,6 +50,9 @@ def progress_view(request):
         "current_mission": progress.get("current_mission", 1),
         "missions_completed": progress.get("missions_completed", []),
     }
+
+    print("SESSION USER_ID:", user_id)
+    print("PROGRESS:", progress)
 
     return render(request, "core/progress.html", context)
 
