@@ -1,0 +1,16 @@
+{% extends "core/base.html" %}
+
+{% block title %}Progress{% endblock %}
+
+{% block content %}
+<h2>Your Progress</h2>
+
+<ul class="list-group">
+    <li class="list-group-item">
+        Current mission: {{ progress.current_mission }}
+    </li>
+    <li class="list-group-item">
+        Missions completed: {{ progress.missions_completed }}
+    </li>
+</ul>
+{% endblock %}

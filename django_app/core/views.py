@@ -1,29 +1,36 @@
 # core/views.py
 from django.shortcuts import render, redirect
+from django.contrib.auth import logout
 from django.contrib import messages
+
 from models.user_model import UserModel
 from models.progress_model import ProgressModel
 
+
 def home(request):
     """Simple home page."""
-    return render(request, "home.html")
+    return render(request, "core/home.html")
+
 
 def login_view(request):
     """Login page with form."""
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
+
         user = UserModel.authenticate(username, password)
+
         if user:
-            # Save user info in session
             request.session["user_id"] = user["id"]
             request.session["username"] = user["username"]
             messages.success(request, f"Logged in as {username}")
             return redirect("progress_view")
         else:
             messages.error(request, "Invalid credentials")
-            return redirect("login_view")
-    return render(request, "login.html")
+            return redirect("login")
+
+    return render(request, "core/login.html")
+
 
 def progress_view(request):
     """Show the logged-in user's progress."""
@@ -32,12 +39,10 @@ def progress_view(request):
 
     if not user_id:
         messages.error(request, "Please log in first.")
-        return redirect("login_view")
+        return redirect("login")
 
-    # Load progress
     progress = ProgressModel.load_progress(user_id)
     if not progress:
-        # Create progress if missing
         progress = ProgressModel.create_progress(user_id)
 
     context = {
@@ -46,4 +51,11 @@ def progress_view(request):
         "missions_completed": progress.get("missions_completed", []),
     }
 
-    return render(request, "progress.html", context)
+    return render(request, "core/progress.html", context)
+
+
+def logout_view(request):
+    """Log out the current user."""
+    request.session.flush()   # important since you are NOT using Django auth users
+    logout(request)
+    return redirect("home")
