@@ -2,7 +2,7 @@
 
 from models.account_service import AccountService
 
-USER_ID = "6970b4f176b3c2e4f7c3f467"
+USER_ID = "697e5fdfb5a29b3d40ec4662"
 
 deleted = AccountService.delete_account(USER_ID)
 print("Account deleted:", deleted)

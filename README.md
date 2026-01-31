@@ -17,7 +17,7 @@ The game places the player in a series of missions where they interact with NPCs
 The primary purpose of this software is to explore the intersection of game development and educational technology. By combining Python programming, Pygame graphics, and interactive text-based scenarios, this project demonstrates how software can be used as a learning tool while reinforcing practical coding skills.
 
 [PYGAME Demo Video](https://youtu.be/b4UElMj7jN0)
-[MONGODB Demo Video](forthcoming)
+[MONGODB Demo Video](https://youtu.be/Oik_L51XPrs)
 
 ---
 
