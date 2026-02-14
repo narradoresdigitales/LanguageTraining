@@ -6,6 +6,9 @@ This project is a Python-based interactive language training game designed to im
 
 The game places the player in a series of missions where they interact with NPCs, respond to prompts in Spanish, and make decisions that influence the progression of the story. Each mission presents objectives, questions, and feedback to guide the player through realistic language exercises.
 
+The web app allows users to log in and see completed missions to track their progress dynamically. The backend uses Django and MongoDB to handle user authentication, store progress, and serve dynamically generated HTML pages. The app runs locally on your computer via Django’s test server.
+
+
 **How to Play:**  
 1. Start the game and create a character profile with a name and password.  
 2. Complete introductory briefings and tutorials.  
@@ -67,7 +70,7 @@ These collections are related through the `user_id` field, allowing each user to
 - [PyMongo Documentation](https://pymongo.readthedocs.io/en/stable/)
 - [Pygame Documentation](https://www.pygame.org/docs/)
 - [Python dotenv](https://pypi.org/project/python-dotenv/)
-
+- [Django documentation](https://docs.djangoproject.com/en/6.0/) 
 
 # Future Work
 
@@ -76,6 +79,12 @@ These collections are related through the `user_id` field, allowing each user to
 - Implement user profile management (password changes, progress reset from UI).
 - Add cloud change notifications or real-time sync features.
 - Improve error handling and user feedback during login and database operations.
+- Add more interactive missions and branching paths in both game and web app
+- Enhance password security (salted hashes, stronger algorithms)
+- Implement full user profile management (password changes, progress reset)
+- Real-time multiplayer exercises or collaborative learning features
+- Improve error handling and user feedback in web forms
+- Add analytics dashboards to visualize user progress
 
 ## How to Run the Game
 
